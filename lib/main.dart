@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_grocery/features/details/bloc/detail_bloc.dart';
 import 'package:smart_grocery/features/product/bloc/product_bloc.dart';
+import 'package:smart_grocery/features/settings/bloc/settings_bloc.dart';
 import 'package:smart_grocery/features/splash/splash_screen.dart';
+import 'features/cart/bloc/cart_bloc.dart';
+import 'features/settings/bloc/settings_state.dart';
 
 void main() {
   runApp(
     MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => ProductBloc()),
-        BlocProvider(create: (context) => DetailBloc()),
+        BlocProvider(create: (context) => CartBloc()),
+        BlocProvider(create: (context) => SettingsBloc()),
       ],
       child: MyApp(),
     ),
@@ -21,9 +24,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const SplashScreen(),
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (BuildContext context, state) {
+        ThemeData themeData = ThemeData.light();
+        if (state is SettingsThemeState) {
+          themeData = state.themeData;
+        }
+        return MaterialApp(
+          theme: themeData,
+          debugShowCheckedModeBanner: false,
+          home: const SplashScreen(),
+        );
+      },
     );
   }
 }

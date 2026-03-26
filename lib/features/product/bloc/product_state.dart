@@ -1,4 +1,4 @@
-import 'package:smart_grocery/features/product/models/Product_model.dart';
+import 'package:smart_grocery/features/product/models/product_model.dart';
 
 abstract class ProductState {}
 
@@ -10,4 +10,10 @@ class ProductLoadedState extends ProductState {
   final List<Product> products;
 
   ProductLoadedState({required this.products});
+}
+
+class ProductErrorState extends ProductState{
+  final String errorMessage;
+
+  ProductErrorState({required this.errorMessage});
 }

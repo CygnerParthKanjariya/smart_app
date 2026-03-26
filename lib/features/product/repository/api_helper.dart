@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:smart_grocery/features/product/models/Product_model.dart';
+import 'package:smart_grocery/features/product/models/product_model.dart';
 
 class ApiHelper {
   Future<ProductModel> fetchProducts() async {

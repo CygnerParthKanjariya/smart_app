@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_grocery/features/cart/screen/cart_screen.dart';
 import 'package:smart_grocery/features/product/bloc/product_bloc.dart';
-import 'package:smart_grocery/features/product/models/Product_model.dart';
-
+import 'package:smart_grocery/features/settings/screen/settings_screen.dart';
+import '../../cart/bloc/cart_bloc.dart';
+import '../../cart/bloc/cart_state.dart';
 import '../../details/screen/detail_screen.dart';
 import '../bloc/product_event.dart';
 import '../bloc/product_state.dart';
@@ -34,92 +35,145 @@ class _ProductScreenState extends State<ProductScreen> {
       appBar: AppBar(
         title: Text("Smart APP"),
         centerTitle: true,
-        actions: [IconButton(onPressed: () {}, icon: Icon(Icons.settings))],
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+            icon: Icon(Icons.settings),
+          ),
+        ],
       ),
-      body: BlocConsumer<ProductBloc, ProductState>(
-        builder: (context, state) {
-          if (state is ProductLoadingState) {
-            return Center(child: CircularProgressIndicator());
-          } else if (state is ProductLoadedState) {
-            return Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: productController,
-                    decoration: InputDecoration(
-                      hintText: "Search Product",
-                      prefixIcon: Icon(
-                        Icons.production_quantity_limits_outlined,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    onChanged: (value) {
-                      context.read<ProductBloc>().add(
-                        SearchProductsEvent(query: value),
-                      );
-                    },
+      body: BlocListener<CartBloc, CartState>(
+        listener: (BuildContext context, state) {
+          if (state is AddedToCartState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Center(
+                  child: Text(
+                    state.isAdded
+                        ? "Product has been Added to cart"
+                        : "Product has remove from cart",
                   ),
-                  SizedBox(height: 10),
-                  Expanded(
-                    child: GridView.builder(
-                      itemCount: state.products.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        crossAxisCount: 2,
-                      ),
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DetailScreen(
-                                  product: state.products[index],
-                                ),
-                              ),
-                            );
-                          },
-                          child: Card(
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  child: Image.network(
-                                    "${state.products[index].thumbnail}",
-                                  ),
-                                ),
-                                Text(
-                                  state.products[index].title ?? "",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: .w600,
-                                  ),
-                                ),
-                                Text(
-                                  state.products[index].description ?? "",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                ),
+                duration: Duration(seconds: 1),
               ),
             );
           }
-          return SizedBox.shrink();
         },
-        listener: (context, state) {},
+        child: BlocBuilder<ProductBloc, ProductState>(
+          builder: (context, state) {
+            if (state is ProductLoadingState) {
+              return Center(child: CircularProgressIndicator());
+            } else if (state is ProductErrorState) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 60,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Oops! Something went wrong.",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () => loadProducts(),
+                      child: const Text("Retry"),
+                    ),
+                  ],
+                ),
+              );
+            } else if (state is ProductLoadedState) {
+              return Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: productController,
+                      decoration: InputDecoration(
+                        hintText: "Search Product",
+                        prefixIcon: Icon(
+                          Icons.production_quantity_limits_outlined,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        context.read<ProductBloc>().add(
+                          SearchProductsEvent(query: value),
+                        );
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    Expanded(
+                      child: GridView.builder(
+                        itemCount: state.products.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          crossAxisCount: 2,
+                        ),
+                        itemBuilder: (context, index) {
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DetailScreen(
+                                    product: state.products[index],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Card(
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: Image.network(
+                                      "${state.products[index].thumbnail}",
+                                    ),
+                                  ),
+                                  Text(
+                                    state.products[index].title ?? "",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: .w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    state.products[index].description ?? "",
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return SizedBox.shrink();
+          },
+        ),
       ),
       resizeToAvoidBottomInset: false,
       floatingActionButton: FloatingActionButton(

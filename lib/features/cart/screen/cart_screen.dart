@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_grocery/features/details/bloc/detail_bloc.dart';
-import 'package:smart_grocery/features/details/bloc/detail_state.dart';
+import 'package:smart_grocery/features/cart/bloc/cart_state.dart';
+import '../bloc/cart_bloc.dart';
+import '../bloc/cart_event.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -10,7 +11,7 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Cart Items"), centerTitle: true),
-      body: BlocConsumer<DetailBloc, DetailState>(
+      body: BlocBuilder<CartBloc, CartState>(
         builder: (context, state) {
           if (state is AddedToCartState) {
             return ListView.builder(
@@ -53,6 +54,17 @@ class CartScreen extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
+                            SizedBox(height: 35),
+                            ElevatedButton(
+                              onPressed: () {
+                                context.read<CartBloc>().add(
+                                  RemoveFromCartEvent(
+                                    product: state.cartItems[index],
+                                  ),
+                                );
+                              },
+                              child: Text("Remove"),
+                            ),
                           ],
                         ),
                       ),
@@ -62,10 +74,9 @@ class CartScreen extends StatelessWidget {
               },
             );
           } else {
-            return Center(child: Text("NO Items Added to Cart"));
+            return Center(child: Text("No Items Added to Cart"));
           }
         },
-        listener: (context, state) {},
       ),
     );
   }
