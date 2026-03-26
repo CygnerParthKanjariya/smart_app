@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_grocery/features/cart/screen/cart_screen.dart';
 import 'package:smart_grocery/features/product/bloc/product_bloc.dart';
 import 'package:smart_grocery/features/product/models/Product_model.dart';
 
@@ -57,9 +58,7 @@ class _ProductScreenState extends State<ProductScreen> {
                     ),
                     onChanged: (value) {
                       context.read<ProductBloc>().add(
-                        SearchProductsEvent(
-                          query: value,
-                        ),
+                        SearchProductsEvent(query: value),
                       );
                     },
                   ),
@@ -100,6 +99,13 @@ class _ProductScreenState extends State<ProductScreen> {
                                     fontWeight: .w600,
                                   ),
                                 ),
+                                Text(
+                                  state.products[index].description ?? "",
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 16),
+                                ),
                               ],
                             ),
                           ),
@@ -114,6 +120,16 @@ class _ProductScreenState extends State<ProductScreen> {
           return SizedBox.shrink();
         },
         listener: (context, state) {},
+      ),
+      resizeToAvoidBottomInset: false,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CartScreen()),
+          );
+        },
+        child: Icon(Icons.shopping_cart),
       ),
     );
   }

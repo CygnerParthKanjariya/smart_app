@@ -4,6 +4,9 @@ import 'package:smart_grocery/features/product/bloc/product_bloc.dart';
 import 'package:smart_grocery/features/product/bloc/product_state.dart';
 import 'package:smart_grocery/features/product/models/Product_model.dart';
 
+import '../bloc/detail_bloc.dart';
+import '../bloc/detail_event.dart';
+
 class DetailScreen extends StatelessWidget {
   final Product product;
 
@@ -24,7 +27,22 @@ class DetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
-                  Image.network(product.thumbnail.toString()),
+                  SizedBox(
+                    height: 200,
+
+                    child: CarouselView(
+                      scrollDirection: .horizontal,
+                      itemExtent: double.infinity,
+                      children: List.generate(product.images?.length ?? 0, (
+                        index,
+                      ) {
+                        print("================================");
+                        print(product.images![index]);
+                        print("================================");
+                        return Image.network(product.images?[index] ?? "");
+                      }),
+                    ),
+                  ),
                   Text(
                     product.title.toString(),
                     textAlign: TextAlign.center,
@@ -86,7 +104,11 @@ class DetailScreen extends StatelessWidget {
             children: [
               ElevatedButton(
                 style: ElevatedButton.styleFrom(),
-                onPressed: () {},
+                onPressed: () {
+                  context.read<DetailBloc>().add(
+                    DetailAddToCartEvent(product: product),
+                  );
+                },
                 child: Text(
                   "Add to Cart",
                   style: TextStyle(fontSize: 18, fontWeight: .bold),

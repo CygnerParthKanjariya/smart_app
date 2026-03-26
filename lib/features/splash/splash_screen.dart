@@ -13,9 +13,10 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Future.delayed(Duration(seconds: 3), () {
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => ProductScreen()),
+        (route) => false,
       );
     });
   }
@@ -24,7 +25,10 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Text("Smart App",style: TextStyle(fontSize: 50,color: Colors.red),)
+        child: Text(
+          "Smart App",
+          style: TextStyle(fontSize: 50, color: Colors.red),
+        ),
       ),
     );
   }
