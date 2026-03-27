@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "36360394050",
+    "project_id": "smartapp-461f4",
+    "storage_bucket": "smartapp-461f4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:36360394050:android:6e06f01afe4137d46e24db",
+        "android_client_info": {
+          "package_name": "com.example.smart_grocery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "36360394050-l12h95fl5328bijier529nf0co08ko92.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.smart_grocery",
+            "certificate_hash": "c74ffa44679b445976b4c4ae665b1348b057ee19"
+          }
+        },
+        {
+          "client_id": "36360394050-gmobe88718rvs50skhirh1n5s0uqo3fb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDp9E7GW6eP9GRjDNCDMt42uVRG40iy5fE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "36360394050-gmobe88718rvs50skhirh1n5s0uqo3fb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
