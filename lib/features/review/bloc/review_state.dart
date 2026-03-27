@@ -1,11 +1,9 @@
-import '../../product/models/Product_model.dart';
-
 abstract class ReviewState {}
 
 class ReviewInitialState extends ReviewState {}
 
 class ReviewLoadedState extends ReviewState {
-  final List<Review> reviews;
+  final List<dynamic> reviews;
 
   ReviewLoadedState({required this.reviews});
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_grocery/features/product/bloc/product_bloc.dart';
+import 'package:smart_grocery/features/review/bloc/review_bloc.dart';
 import 'package:smart_grocery/features/settings/bloc/settings_bloc.dart';
 import 'package:smart_grocery/features/splash/splash_screen.dart';
 import 'features/cart/bloc/cart_bloc.dart';
@@ -13,6 +14,7 @@ void main() {
         BlocProvider(create: (context) => ProductBloc()),
         BlocProvider(create: (context) => CartBloc()),
         BlocProvider(create: (context) => SettingsBloc()),
+        BlocProvider(create: (context) => ReviewBloc()),
       ],
       child: MyApp(),
     ),
