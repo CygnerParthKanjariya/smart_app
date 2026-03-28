@@ -6,17 +6,49 @@ import 'package:smart_grocery/features/product/repository/api_helper.dart';
 
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
   List<Product> _allProducts = [];
+  int _currentSkip = 0;
+  final int _limit = 20;
+  bool _isFetching = false;
+  bool _hasReachedMax = false;
 
   ProductBloc() : super(ProductInitialState()) {
     on<GetProductsEvent>((event, emit) async {
-      emit(ProductLoadingState());
+      if (_isFetching || _hasReachedMax) return;
+
+      _isFetching = true;
+
       try {
-        ProductModel productModel = await ApiHelper().fetchProducts();
-        _allProducts = productModel.products ?? [];
+        if (!event.isLoadMore) {
+          emit(ProductLoadingState());
+
+          _currentSkip = 0;
+          _allProducts = [];
+          _hasReachedMax = false;
+        }
+
+        final productModel = await ApiHelper().fetchProducts(
+          skip: _currentSkip,
+          limit: _limit,
+        );
+
+        final List<Product> newProducts = productModel.products ?? [];
+
+        if (newProducts.isEmpty) {
+          _hasReachedMax = true;
+        } else {
+          _allProducts.addAll(newProducts);
+          _currentSkip += _limit;
+        }
+        print(_allProducts);
+        print(_allProducts.length);
         emit(ProductLoadedState(products: _allProducts));
       } catch (e) {
-        emit(ProductErrorState(errorMessage: e.toString()));
+        if (_allProducts.isEmpty) {
+          emit(ProductErrorState(errorMessage: e.toString()));
+        }
       }
+
+      _isFetching = false;
     });
 
     on<SearchProductsEvent>((event, emit) {

@@ -1,11 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_grocery/features/cart/screen/cart_screen.dart';
 import 'package:smart_grocery/features/product/bloc/product_bloc.dart';
-import 'package:smart_grocery/features/settings/screen/settings_screen.dart';
 import '../../cart/bloc/cart_bloc.dart';
 import '../../cart/bloc/cart_state.dart';
+import '../../cart/screen/cart_screen.dart';
 import '../../details/screen/detail_screen.dart';
+import '../../settings/screen/settings_screen.dart';
 import '../bloc/product_event.dart';
 import '../bloc/product_state.dart';
 
@@ -17,31 +18,84 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
+  final ScrollController scrollController = ScrollController();
   TextEditingController productController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     loadProducts();
+    scrollController.addListener(onScroll);
   }
 
   void loadProducts() {
     context.read<ProductBloc>().add(GetProductsEvent());
   }
 
+  void onScroll() {
+    if (productController.text.isNotEmpty) return;
+
+    if (scrollController.position.pixels >=
+        scrollController.position.maxScrollExtent - 100) {
+      context.read<ProductBloc>().add(GetProductsEvent(isLoadMore: true));
+    }
+  }
+
+  final user = FirebaseAuth.instance.currentUser;
+
+  Widget buildProfilePicture() {
+    if (user?.photoURL == null || user!.photoURL!.isEmpty) {
+      return const CircleAvatar(child: Icon(Icons.person));
+    }
+
+    return CircleAvatar(
+      backgroundImage: NetworkImage(user!.photoURL!),
+      radius: 20,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Smart APP"), centerTitle: true),
+      appBar: AppBar(
+        title: Text("Smart APP"),
+        centerTitle: true,
+        leading: Builder(
+          builder: (context) {
+            return InkWell(
+              onTap: () {
+                Scaffold.of(context).openDrawer();
+              },
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: buildProfilePicture(),
+              ),
+            );
+          },
+        ),
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text(
-                'Navigation Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Colors.blue),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(child: buildProfilePicture()),
+                      SizedBox(width: 10),
+                      Text(
+                        user?.displayName.toString() ?? "",
+                        style: TextStyle(fontWeight: .bold, fontSize: 20),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 5),
+                  Text(user?.email.toString() ?? ""),
+                ],
               ),
             ),
             ListTile(
@@ -59,6 +113,17 @@ class _ProductScreenState extends State<ProductScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => SettingsScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.shopping_cart),
+              title: const Text('My Cart'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CartScreen()),
                 );
               },
             ),
@@ -86,7 +151,8 @@ class _ProductScreenState extends State<ProductScreen> {
           builder: (context, state) {
             if (state is ProductLoadingState) {
               return Center(child: CircularProgressIndicator());
-            } else if (state is ProductErrorState) {
+            }
+            if (state is ProductErrorState) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -112,7 +178,8 @@ class _ProductScreenState extends State<ProductScreen> {
                   ],
                 ),
               );
-            } else if (state is ProductLoadedState) {
+            }
+            if (state is ProductLoadedState) {
               return Padding(
                 padding: const EdgeInsets.all(10),
                 child: Column(
@@ -137,13 +204,17 @@ class _ProductScreenState extends State<ProductScreen> {
                     SizedBox(height: 10),
                     Expanded(
                       child: GridView.builder(
-                        itemCount: state.products.length,
+                        controller: scrollController,
+                        itemCount: state.products.length + 1,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
                           crossAxisCount: 2,
                         ),
                         itemBuilder: (context, index) {
+                          if (index == state.products.length) {
+                            return Center(child: CircularProgressIndicator());
+                          }
                           return InkWell(
                             onTap: () {
                               Navigator.push(
@@ -192,16 +263,6 @@ class _ProductScreenState extends State<ProductScreen> {
             return SizedBox.shrink();
           },
         ),
-      ),
-      resizeToAvoidBottomInset: false,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => CartScreen()),
-          );
-        },
-        child: Icon(Icons.shopping_cart),
       ),
     );
   }
