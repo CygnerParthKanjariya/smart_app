@@ -18,27 +18,16 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
-  final ScrollController scrollController = ScrollController();
   TextEditingController productController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     loadProducts();
-    scrollController.addListener(onScroll);
   }
 
   void loadProducts() {
     context.read<ProductBloc>().add(GetProductsEvent());
-  }
-
-  void onScroll() {
-    if (productController.text.isNotEmpty) return;
-
-    if (scrollController.position.pixels >=
-        scrollController.position.maxScrollExtent - 100) {
-      context.read<ProductBloc>().add(GetProductsEvent(isLoadMore: true));
-    }
   }
 
   final user = FirebaseAuth.instance.currentUser;
@@ -204,17 +193,13 @@ class _ProductScreenState extends State<ProductScreen> {
                     SizedBox(height: 10),
                     Expanded(
                       child: GridView.builder(
-                        controller: scrollController,
-                        itemCount: state.products.length + 1,
+                        itemCount: state.products.length,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
                           crossAxisCount: 2,
                         ),
                         itemBuilder: (context, index) {
-                          if (index == state.products.length) {
-                            return Center(child: CircularProgressIndicator());
-                          }
                           return InkWell(
                             onTap: () {
                               Navigator.push(

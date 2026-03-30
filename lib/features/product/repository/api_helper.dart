@@ -4,12 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:smart_grocery/features/product/models/product_model.dart';
 
 class ApiHelper {
-  Future<ProductModel> fetchProducts({
-    required int limit,
-    required int skip,
-  }) async {
+  Future<ProductModel> fetchProducts() async {
     final response = await http.get(
-      Uri.parse("https://dummyjson.com/products?limit=$limit&skip=$skip"),
+      Uri.parse("https://dummyjson.com/products"),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
