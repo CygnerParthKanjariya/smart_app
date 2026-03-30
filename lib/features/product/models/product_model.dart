@@ -29,7 +29,7 @@ class Product {
   int? id;
   String? title;
   String? description;
-  Category? category;
+  String? category; // Changed from enum to String for resilience
   double? price;
   double? discountPercentage;
   double? rating;
@@ -41,9 +41,9 @@ class Product {
   Dimensions? dimensions;
   String? warrantyInformation;
   String? shippingInformation;
-  AvailabilityStatus? availabilityStatus;
+  String? availabilityStatus; // Changed from enum to String
   List<Review>? reviews;
-  ReturnPolicy? returnPolicy;
+  String? returnPolicy; // Changed from enum to String
   int? minimumOrderQuantity;
   Meta? meta;
   List<String>? images;
@@ -78,7 +78,7 @@ class Product {
     id: json["id"],
     title: json["title"],
     description: json["description"],
-    category: categoryValues.map[json["category"]]!,
+    category: json["category"],
     price: json["price"]?.toDouble(),
     discountPercentage: json["discountPercentage"]?.toDouble(),
     rating: json["rating"]?.toDouble(),
@@ -94,12 +94,11 @@ class Product {
         : Dimensions.fromJson(json["dimensions"]),
     warrantyInformation: json["warrantyInformation"],
     shippingInformation: json["shippingInformation"],
-    availabilityStatus:
-        availabilityStatusValues.map[json["availabilityStatus"]]!,
+    availabilityStatus: json["availabilityStatus"],
     reviews: json["reviews"] == null
         ? []
         : List<Review>.from(json["reviews"]!.map((x) => Review.fromJson(x))),
-    returnPolicy: returnPolicyValues.map[json["returnPolicy"]]!,
+    returnPolicy: json["returnPolicy"],
     minimumOrderQuantity: json["minimumOrderQuantity"],
     meta: json["meta"] == null ? null : Meta.fromJson(json["meta"]),
     images: json["images"] == null
@@ -112,7 +111,7 @@ class Product {
     "id": id,
     "title": title,
     "description": description,
-    "category": categoryValues.reverse[category],
+    "category": category,
     "price": price,
     "discountPercentage": discountPercentage,
     "rating": rating,
@@ -124,33 +123,17 @@ class Product {
     "dimensions": dimensions?.toJson(),
     "warrantyInformation": warrantyInformation,
     "shippingInformation": shippingInformation,
-    "availabilityStatus": availabilityStatusValues.reverse[availabilityStatus],
+    "availabilityStatus": availabilityStatus,
     "reviews": reviews == null
         ? []
         : List<dynamic>.from(reviews!.map((x) => x.toJson())),
-    "returnPolicy": returnPolicyValues.reverse[returnPolicy],
+    "returnPolicy": returnPolicy,
     "minimumOrderQuantity": minimumOrderQuantity,
     "meta": meta?.toJson(),
     "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x)),
     "thumbnail": thumbnail,
   };
 }
-
-enum AvailabilityStatus { inStock, lowStock }
-
-final availabilityStatusValues = EnumValues({
-  "In Stock": AvailabilityStatus.inStock,
-  "Low Stock": AvailabilityStatus.lowStock,
-});
-
-enum Category { beauty, fragrances, furniture, groceries }
-
-final categoryValues = EnumValues({
-  "beauty": Category.beauty,
-  "fragrances": Category.fragrances,
-  "furniture": Category.furniture,
-  "groceries": Category.groceries,
-});
 
 class Dimensions {
   double? width;
@@ -199,22 +182,6 @@ class Meta {
   };
 }
 
-enum ReturnPolicy {
-  noReturnPolicy,
-  the30DaysReturnPolicy,
-  the60DaysReturnPolicy,
-  the7DaysReturnPolicy,
-  the90DaysReturnPolicy,
-}
-
-final returnPolicyValues = EnumValues({
-  "No return policy": ReturnPolicy.noReturnPolicy,
-  "30 days return policy": ReturnPolicy.the30DaysReturnPolicy,
-  "60 days return policy": ReturnPolicy.the60DaysReturnPolicy,
-  "7 days return policy": ReturnPolicy.the7DaysReturnPolicy,
-  "90 days return policy": ReturnPolicy.the90DaysReturnPolicy,
-});
-
 class Review {
   int? rating;
   String? comment;
@@ -245,16 +212,4 @@ class Review {
     "reviewerName": reviewerName,
     "reviewerEmail": reviewerEmail,
   };
-}
-
-class EnumValues<T> {
-  Map<String, T> map;
-  late Map<T, String> reverseMap;
-
-  EnumValues(this.map);
-
-  Map<T, String> get reverse {
-    reverseMap = map.map((k, v) => MapEntry(v, k));
-    return reverseMap;
-  }
 }

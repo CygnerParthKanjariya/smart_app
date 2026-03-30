@@ -8,11 +8,17 @@ class ProductLoadingState extends ProductState {}
 
 class ProductLoadedState extends ProductState {
   final List<Product> products;
+  final bool isLastPage;
+  final int nextPageKey;
 
-  ProductLoadedState({required this.products});
+  ProductLoadedState({
+    required this.products,
+    required this.isLastPage,
+    required this.nextPageKey,
+  });
 }
 
-class ProductErrorState extends ProductState{
+class ProductErrorState extends ProductState {
   final String errorMessage;
 
   ProductErrorState({required this.errorMessage});
