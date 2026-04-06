@@ -2,12 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:smart_grocery/features/product/bloc/product_bloc.dart';
 import 'package:smart_grocery/features/product/models/product_model.dart';
 import '../../cart/bloc/cart_bloc.dart';
 import '../../cart/bloc/cart_state.dart';
 import '../../cart/screen/cart_screen.dart';
 import '../../details/screen/detail_screen.dart';
+import '../../login/screen/login_screen.dart';
 import '../../settings/screen/settings_screen.dart';
 import '../bloc/product_event.dart';
 import '../bloc/product_state.dart';
@@ -27,6 +29,7 @@ class _ProductScreenState extends State<ProductScreen> {
   @override
   void initState() {
     super.initState();
+    requestLocationPermission();
     _pagingController = PagingController<int, Product>(
       getNextPageKey: (state) => null,
       fetchPage: (pageKey) {
@@ -73,6 +76,22 @@ class _ProductScreenState extends State<ProductScreen> {
       backgroundImage: NetworkImage(user!.photoURL!),
       radius: 20,
     );
+  }
+
+  Future<void> requestLocationPermission() async {
+    final status = await Permission.location.request();
+    print("========================================");
+    if(status.isGranted){
+      print("Status: Permission Granted");
+    }
+    else if(status.isDenied){
+      print("Status: Permission Denied");
+    }
+    else if(status.isPermanentlyDenied){
+      print("Status: Permission Permanently Denied");
+      openAppSettings();
+    }
+    print("========================================");
   }
 
   @override
@@ -152,6 +171,21 @@ class _ProductScreenState extends State<ProductScreen> {
                 );
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () {
+                print("========================================");
+                print("user: ${user?.email} Signed Out!");
+                print("========================================");
+                FirebaseAuth.instance.signOut();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  (route) => false,
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -191,7 +225,7 @@ class _ProductScreenState extends State<ProductScreen> {
                     currentState.pages ?? [],
                   );
                   updatedPages.add(state.products);
-
+                  print("========================================");
                   print("updated pages: $updatedPages");
                   print("updated pages length: ${updatedPages.length}");
 
@@ -201,6 +235,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   updatedKeys.add(state.nextPageKey);
 
                   print("updated keys: $updatedKeys}");
+                  print("========================================");
 
                   _pagingController.value = PagingState(
                     pages: updatedPages,

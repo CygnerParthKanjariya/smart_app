@@ -8,3 +8,5 @@ class ChangeThemeSettingsEvent extends SettingsEvent{
 
   ChangeThemeSettingsEvent({required this.themeData});
 }
+
+class LoadThemeEvent extends SettingsEvent {}

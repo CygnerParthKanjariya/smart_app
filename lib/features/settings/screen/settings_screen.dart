@@ -35,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
                       onChanged: (value) {
                         context.read<SettingsBloc>().add(
                           ChangeThemeSettingsEvent(
-                            themeData: value ? ThemeData.light() : ThemeData.dark(),
+                            themeData: value ? ThemeData.dark() : ThemeData.light(),
                           ),
                         );
                       },
