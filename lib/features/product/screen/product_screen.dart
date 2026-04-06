@@ -20,6 +20,7 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
+  bool isSearching = true;
   final TextEditingController productController = TextEditingController();
   late final PagingController<int, Product> _pagingController;
 
@@ -27,7 +28,7 @@ class _ProductScreenState extends State<ProductScreen> {
   void initState() {
     super.initState();
     _pagingController = PagingController<int, Product>(
-      getNextPageKey: (state) => null, // Triggered by Bloc listener
+      getNextPageKey: (state) => null,
       fetchPage: (pageKey) {
         context.read<ProductBloc>().add(GetProductsEvent(pageKey: pageKey));
         return <Product>[];
@@ -43,8 +44,13 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   void _onFetchNextPage() {
+    if (productController.text.isNotEmpty) return;
+
     final currentState = _pagingController.value;
+
     if (currentState.isLoading || !currentState.hasNextPage) return;
+
+    final nextKey = currentState.keys?.last ?? 0;
 
     _pagingController.value = PagingState(
       pages: currentState.pages,
@@ -54,12 +60,6 @@ class _ProductScreenState extends State<ProductScreen> {
       isLoading: true,
     );
 
-    int nextKey = 0;
-    if (currentState.pages != null) {
-      for (var page in currentState.pages!) {
-        nextKey += page.length;
-      }
-    }
     context.read<ProductBloc>().add(GetProductsEvent(pageKey: nextKey));
   }
 
@@ -109,7 +109,10 @@ class _ProductScreenState extends State<ProductScreen> {
                       Flexible(
                         child: Text(
                           user?.displayName ?? "",
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -132,7 +135,9 @@ class _ProductScreenState extends State<ProductScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const SettingsScreen(),
+                  ),
                 );
               },
             ),
@@ -182,11 +187,20 @@ class _ProductScreenState extends State<ProductScreen> {
                     isLoading: false,
                   );
                 } else {
-                  final List<List<Product>> updatedPages = List.from(currentState.pages ?? []);
+                  final List<List<Product>> updatedPages = List.from(
+                    currentState.pages ?? [],
+                  );
                   updatedPages.add(state.products);
 
-                  final List<int> updatedKeys = List.from(currentState.keys ?? []);
+                  print("updated pages: $updatedPages");
+                  print("updated pages length: ${updatedPages.length}");
+
+                  final List<int> updatedKeys = List.from(
+                    currentState.keys ?? [],
+                  );
                   updatedKeys.add(state.nextPageKey);
+
+                  print("updated keys: $updatedKeys}");
 
                   _pagingController.value = PagingState(
                     pages: updatedPages,
@@ -224,14 +238,30 @@ class _ProductScreenState extends State<ProductScreen> {
                 decoration: InputDecoration(
                   hintText: "Search Product",
                   prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                 ),
                 onChanged: (value) {
                   if (value.isEmpty) {
-                    _pagingController.value = PagingState(hasNextPage: true, isLoading: false);
-                    context.read<ProductBloc>().add(GetProductsEvent(pageKey: 0));
+                    isSearching = false;
+
+                    _pagingController.value = PagingState(
+                      pages: [],
+                      keys: [],
+                      hasNextPage: true,
+                      isLoading: false,
+                    );
+
+                    context.read<ProductBloc>().add(
+                      GetProductsEvent(pageKey: 0),
+                    );
                   } else {
-                    context.read<ProductBloc>().add(SearchProductsEvent(query: value));
+                    isSearching = true;
+
+                    context.read<ProductBloc>().add(
+                      SearchProductsEvent(query: value),
+                    );
                   }
                 },
               ),
@@ -243,18 +273,20 @@ class _ProductScreenState extends State<ProductScreen> {
                     return PagedGridView<int, Product>(
                       state: state,
                       fetchNextPage: _onFetchNextPage,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        crossAxisCount: 2,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                            crossAxisCount: 2,
+                          ),
                       builderDelegate: PagedChildBuilderDelegate<Product>(
                         itemBuilder: (context, item, index) => InkWell(
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => DetailScreen(product: item),
+                                builder: (context) =>
+                                    DetailScreen(product: item),
                               ),
                             );
                           },
@@ -264,7 +296,8 @@ class _ProductScreenState extends State<ProductScreen> {
                                 Expanded(
                                   child: Image.network(
                                     item.thumbnail ?? "",
-                                    errorBuilder: (_, __, ___) => const Icon(Icons.error),
+                                    errorBuilder: (_, __, ___) =>
+                                        const Icon(Icons.error),
                                   ),
                                 ),
                                 Padding(
@@ -273,11 +306,16 @@ class _ProductScreenState extends State<ProductScreen> {
                                     item.title ?? "",
                                     textAlign: TextAlign.center,
                                     maxLines: 1,
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4.0,
+                                  ),
                                   child: Text(
                                     item.description ?? "",
                                     maxLines: 2,
