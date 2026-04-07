@@ -10,11 +10,13 @@ class ProductLoadedState extends ProductState {
   final List<Product> products;
   final bool isLastPage;
   final int nextPageKey;
+  final bool replaceAll;
 
   ProductLoadedState({
     required this.products,
     required this.isLastPage,
     required this.nextPageKey,
+    this.replaceAll = false,
   });
 }
 

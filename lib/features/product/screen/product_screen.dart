@@ -22,7 +22,6 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
-  bool isSearching = true;
   final TextEditingController productController = TextEditingController();
   late final PagingController<int, Product> _pagingController;
 
@@ -50,10 +49,14 @@ class _ProductScreenState extends State<ProductScreen> {
     if (productController.text.isNotEmpty) return;
 
     final currentState = _pagingController.value;
-
     if (currentState.isLoading || !currentState.hasNextPage) return;
 
-    final nextKey = currentState.keys?.last ?? 0;
+    int nextKey = 0;
+    if (currentState.pages != null) {
+      for (var page in currentState.pages!) {
+        nextKey += page.length;
+      }
+    }
 
     _pagingController.value = PagingState(
       pages: currentState.pages,
@@ -80,18 +83,51 @@ class _ProductScreenState extends State<ProductScreen> {
 
   Future<void> requestLocationPermission() async {
     final status = await Permission.location.request();
-    print("========================================");
-    if(status.isGranted){
-      print("Status: Permission Granted");
-    }
-    else if(status.isDenied){
-      print("Status: Permission Denied");
-    }
-    else if(status.isPermanentlyDenied){
-      print("Status: Permission Permanently Denied");
+    if (status.isPermanentlyDenied) {
       openAppSettings();
     }
-    print("========================================");
+  }
+
+  void _showSortBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.sort),
+              title: const Text('Price: Low to High'),
+              onTap: () {
+                context.read<ProductBloc>().add(
+                      SortProductsEvent(sortType: ProductSortType.lowToHigh),
+                    );
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.sort),
+              title: const Text('Price: High to Low'),
+              onTap: () {
+                context.read<ProductBloc>().add(
+                      SortProductsEvent(sortType: ProductSortType.highToLow),
+                    );
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.refresh),
+              title: const Text('Reset to Default'),
+              onTap: () {
+                context.read<ProductBloc>().add(
+                      SortProductsEvent(sortType: ProductSortType.none),
+                    );
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -111,6 +147,12 @@ class _ProductScreenState extends State<ProductScreen> {
             );
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () => _showSortBottomSheet(context),
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -172,7 +214,7 @@ class _ProductScreenState extends State<ProductScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.logout),
+              leading: const Icon(Icons.logout,color: Colors.red,),
               title: const Text('Logout'),
               onTap: () {
                 print("========================================");
@@ -181,7 +223,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 FirebaseAuth.instance.signOut();
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
                   (route) => false,
                 );
               },
@@ -213,11 +255,12 @@ class _ProductScreenState extends State<ProductScreen> {
             listener: (context, state) {
               if (state is ProductLoadedState) {
                 final currentState = _pagingController.value;
-                if (productController.text.isNotEmpty) {
+
+                if (state.replaceAll) {
                   _pagingController.value = PagingState(
                     pages: [state.products],
                     keys: [0],
-                    hasNextPage: false,
+                    hasNextPage: !state.isLastPage,
                     isLoading: false,
                   );
                 } else {
@@ -252,6 +295,15 @@ class _ProductScreenState extends State<ProductScreen> {
                   hasNextPage: _pagingController.value.hasNextPage,
                   isLoading: false,
                 );
+
+                if (state.errorMessage == "Check your network connection.") {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.errorMessage),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               } else if (state is ProductLoadingState) {
                 _pagingController.value = PagingState(
                   pages: _pagingController.value.pages,
@@ -279,24 +331,19 @@ class _ProductScreenState extends State<ProductScreen> {
                 ),
                 onChanged: (value) {
                   if (value.isEmpty) {
-                    isSearching = false;
-
                     _pagingController.value = PagingState(
                       pages: [],
                       keys: [],
                       hasNextPage: true,
                       isLoading: false,
                     );
-
                     context.read<ProductBloc>().add(
-                      GetProductsEvent(pageKey: 0),
-                    );
+                          GetProductsEvent(pageKey: 0),
+                        );
                   } else {
-                    isSearching = true;
-
                     context.read<ProductBloc>().add(
-                      SearchProductsEvent(query: value),
-                    );
+                          SearchProductsEvent(query: value),
+                        );
                   }
                 },
               ),
@@ -357,6 +404,17 @@ class _ProductScreenState extends State<ProductScreen> {
                                     overflow: TextOverflow.ellipsis,
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: Text(
+                                    "\$${item.price}",
+                                    style: const TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 ),
                               ],

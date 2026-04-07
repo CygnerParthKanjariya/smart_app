@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_grocery/features/login/bloc/login_bloc.dart';
@@ -14,10 +15,22 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController emailController = TextEditingController();
-
   TextEditingController passwordController = TextEditingController();
-
   bool showAndHide = true;
+
+  Future<bool> _checkConnectivity() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Check your network connection."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,21 +41,21 @@ class _LoginScreenState extends State<LoginScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage),
-                duration: Duration(seconds: 2),
+                duration: const Duration(seconds: 2),
               ),
             );
           }
           if (state is LoginSuccessState) {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => ProductScreen()),
+              MaterialPageRoute(builder: (context) => const ProductScreen()),
               (route) => false,
             );
           }
           if (state is GoogleLoginSuccessState) {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => ProductScreen()),
+              MaterialPageRoute(builder: (context) => const ProductScreen()),
               (route) => false,
             );
           }
@@ -56,11 +69,11 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Form(
             child: Column(
               children: [
-                Row(
+                const Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(top: 63, left: 32),
+                      padding: EdgeInsets.only(top: 63, left: 32),
                       child: Text(
                         'Welcome\nBack!',
                         style: TextStyle(
@@ -71,33 +84,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
                 Padding(
                   padding: const EdgeInsets.only(left: 32, right: 32),
                   child: TextFormField(
                     controller: emailController,
                     decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.person),
+                      prefixIcon: const Icon(Icons.person),
                       filled: true,
                       fillColor: Colors.grey[300],
-                      hint: Text('Email'),
+                      hintText: 'Email',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 25),
+                const SizedBox(height: 25),
                 Padding(
                   padding: const EdgeInsets.only(left: 29, right: 29),
                   child: TextFormField(
                     controller: passwordController,
                     obscureText: showAndHide,
                     decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.lock),
+                      prefixIcon: const Icon(Icons.lock),
                       filled: true,
                       fillColor: Colors.grey[300],
-                      hint: Text('Password'),
+                      hintText: 'Password',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -121,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.only(right: 15),
                       child: TextButton(
                         onPressed: () {},
-                        child: Text('Forgot Password?'),
+                        child: const Text('Forgot Password?'),
                       ),
                     ),
                   ],
@@ -129,50 +142,51 @@ class _LoginScreenState extends State<LoginScreen> {
                 BlocBuilder<LoginBloc, LoginState>(
                   builder: (BuildContext context, state) {
                     if (state is LoginLoadingState) {
-                      return CircularProgressIndicator();
+                      return const CircularProgressIndicator();
                     }
                     return ElevatedButton(
-                      onPressed: () {
-                        context.read<LoginBloc>().add(
-                          LoginSuccessEvent(
-                            email: emailController.text,
-                            password: passwordController.text,
-                          ),
-                        );
+                      onPressed: () async {
+                        if (await _checkConnectivity()) {
+                          context.read<LoginBloc>().add(
+                            LoginSuccessEvent(
+                              email: emailController.text,
+                              password: passwordController.text,
+                            ),
+                          );
+                        }
                       },
-                      child: Text("Login"),
+                      child: const Text("Login"),
                     );
                   },
                 ),
-                SizedBox(height: 80),
-                Text('- Or Continue with -'),
-                SizedBox(height: 20),
+                const SizedBox(height: 80),
+                const Text('- Or Continue with -'),
+                const SizedBox(height: 20),
                 Row(
-                  spacing: 15,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     InkWell(
-                      onTap: () {
-                        context.read<LoginBloc>().add(GoogleLoginEvent());
+                      onTap: () async {
+                        if (await _checkConnectivity()) {
+                          context.read<LoginBloc>().add(GoogleLoginEvent());
+                        }
                       },
-                      child: BlocBuilder<LoginBloc, LoginState>(
-                        builder: (context, state) {
-                          return CircleAvatar(
-                            child: Image.asset('assets/Google.png'),
-                          );
-                        },
+                      child: CircleAvatar(
+                        child: Image.asset('assets/Google.png'),
                       ),
                     ),
+                    const SizedBox(width: 15),
                     CircleAvatar(child: Image.asset('assets/Apple.png')),
+                    const SizedBox(width: 15),
                     CircleAvatar(child: Image.asset('assets/Facebook (1).png')),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Create An Account'),
-                    TextButton(onPressed: () {}, child: Text('Sign Up')),
+                    const Text('Create An Account'),
+                    TextButton(onPressed: () {}, child: const Text('Sign Up')),
                   ],
                 ),
               ],
