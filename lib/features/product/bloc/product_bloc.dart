@@ -3,16 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_grocery/features/product/bloc/product_event.dart';
 import 'package:smart_grocery/features/product/bloc/product_state.dart';
 import 'package:smart_grocery/features/product/models/product_model.dart';
-import '../repository/api_helper.dart';
+
+import '../repository/product_repository.dart';
 
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
+  final ProductRepository productRepository;
   static const int _pageSize = 20;
   
   List<Product> _allLoadedProducts = [];
   List<Product> _originalOrderProducts = [];
   ProductSortType _currentSortType = ProductSortType.none;
 
-  ProductBloc() : super(ProductInitialState()) {
+  ProductBloc({required this.productRepository}) : super(ProductInitialState()) {
     on<GetProductsEvent>((event, emit) async {
       final connectivityResult = await Connectivity().checkConnectivity();
       if (connectivityResult.contains(ConnectivityResult.none)) {
@@ -21,7 +23,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       }
 
       try {
-        final productModel = await ApiHelper().fetchProducts(
+        final productModel = await productRepository.fetchProducts(
           limit: _pageSize,
           skip: event.pageKey,
         );
@@ -60,7 +62,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         emit(ProductErrorState(errorMessage: e.toString()));
       }
     });
-
     on<SearchProductsEvent>((event, emit) async {
       final connectivityResult = await Connectivity().checkConnectivity();
       if (connectivityResult.contains(ConnectivityResult.none)) {
@@ -75,7 +76,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
       emit(ProductLoadingState());
       try {
-        final productModel = await ApiHelper().searchProducts(query: event.query);
+        final productModel = await productRepository.searchProducts(query: event.query);
         final items = productModel.products ?? [];
         
         emit(ProductLoadedState(

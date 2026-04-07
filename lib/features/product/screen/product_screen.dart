@@ -99,8 +99,8 @@ class _ProductScreenState extends State<ProductScreen> {
               title: const Text('Price: Low to High'),
               onTap: () {
                 context.read<ProductBloc>().add(
-                      SortProductsEvent(sortType: ProductSortType.lowToHigh),
-                    );
+                  SortProductsEvent(sortType: ProductSortType.lowToHigh),
+                );
                 Navigator.pop(context);
               },
             ),
@@ -109,8 +109,8 @@ class _ProductScreenState extends State<ProductScreen> {
               title: const Text('Price: High to Low'),
               onTap: () {
                 context.read<ProductBloc>().add(
-                      SortProductsEvent(sortType: ProductSortType.highToLow),
-                    );
+                  SortProductsEvent(sortType: ProductSortType.highToLow),
+                );
                 Navigator.pop(context);
               },
             ),
@@ -119,8 +119,8 @@ class _ProductScreenState extends State<ProductScreen> {
               title: const Text('Reset to Default'),
               onTap: () {
                 context.read<ProductBloc>().add(
-                      SortProductsEvent(sortType: ProductSortType.none),
-                    );
+                  SortProductsEvent(sortType: ProductSortType.none),
+                );
                 Navigator.pop(context);
               },
             ),
@@ -163,6 +163,13 @@ class _ProductScreenState extends State<ProductScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    "Welcome,",
+                    style: TextStyle(
+                      fontSize: 23,
+                      fontWeight: .bold,
+                    ),
+                  ),
                   Row(
                     children: [
                       CircleAvatar(child: buildProfilePicture()),
@@ -214,7 +221,7 @@ class _ProductScreenState extends State<ProductScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.logout,color: Colors.red,),
+              leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Logout'),
               onTap: () {
                 print("========================================");
@@ -338,12 +345,12 @@ class _ProductScreenState extends State<ProductScreen> {
                       isLoading: false,
                     );
                     context.read<ProductBloc>().add(
-                          GetProductsEvent(pageKey: 0),
-                        );
+                      GetProductsEvent(pageKey: 0),
+                    );
                   } else {
                     context.read<ProductBloc>().add(
-                          SearchProductsEvent(query: value),
-                        );
+                      SearchProductsEvent(query: value),
+                    );
                   }
                 },
               ),
